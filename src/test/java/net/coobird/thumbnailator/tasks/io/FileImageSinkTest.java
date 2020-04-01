@@ -2115,7 +2115,7 @@ public class FileImageSinkTest
 	}
 	
 	@Test
-	public void constructorFile_write_allowOverwriteTrue() throws IOException
+	public void constructorFile_write_allowOverwriteTrue_noExtensionFalse() throws IOException
 	{
 		// set up
 		File sourceFile = new File("src/test/resources/Thumbnailator/grid.png");
@@ -2125,7 +2125,7 @@ public class FileImageSinkTest
 		TestUtils.copyFile(sourceFile, f);
 		
 		// given
-		FileImageSink sink = new FileImageSink(f, true);
+		FileImageSink sink = new FileImageSink(f, true, false);
 		
 		// when
 		sink.write(ImageIO.read(f));
@@ -2138,7 +2138,7 @@ public class FileImageSinkTest
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void constructorFile_write_allowOverwriteFalse() throws IOException
+	public void constructorFile_write_allowOverwriteFalse_noExtensionFalse() throws IOException
 	{
 		// set up
 		File sourceFile = new File("src/test/resources/Thumbnailator/grid.png");
@@ -2148,7 +2148,34 @@ public class FileImageSinkTest
 		TestUtils.copyFile(sourceFile, f);
 		
 		// given
-		FileImageSink sink = new FileImageSink(f, false);
+		FileImageSink sink = new FileImageSink(f, false, false);
+		
+		// when
+		try
+		{
+			sink.write(ImageIO.read(f));
+		}
+		catch (IllegalArgumentException e)
+		{
+			assertEquals("The destination file exists.", e.getMessage());
+			throw e;
+		}
+		
+		// clean ups
+		f.delete();
+	}
+	
+	public void constructorFile_write_allowOverwriteFalse_noExtensionTrue() throws IOException
+	{
+		// set up
+		File sourceFile = new File("src/test/resources/Thumbnailator/grid.png");
+		File f = new File(TMPDIR, "tmp-grid.png");
+		
+		// copy the image to a temporary file.
+		TestUtils.copyFile(sourceFile, f);
+		
+		// given
+		FileImageSink sink = new FileImageSink(f, false, true);
 		
 		// when
 		try
@@ -2166,7 +2193,7 @@ public class FileImageSinkTest
 	}
 	
 	@Test
-	public void constructorString_write_allowOverwriteTrue() throws IOException
+	public void constructorString_write_allowOverwriteTrue_noExtensionFalse() throws IOException
 	{
 		// set up
 		File sourceFile = new File("src/test/resources/Thumbnailator/grid.png");
@@ -2176,7 +2203,7 @@ public class FileImageSinkTest
 		TestUtils.copyFile(sourceFile, f);
 		
 		// given
-		FileImageSink sink = new FileImageSink(f.getAbsolutePath(), true);
+		FileImageSink sink = new FileImageSink(f.getAbsolutePath(), true, false);
 		
 		// when
 		sink.write(ImageIO.read(f));
@@ -2189,7 +2216,7 @@ public class FileImageSinkTest
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void constructorString_write_allowOverwriteFalse() throws IOException
+	public void constructorString_write_allowOverwriteFalse_noExtensionFalse() throws IOException
 	{
 		// set up
 		File sourceFile = new File("src/test/resources/Thumbnailator/grid.png");
@@ -2199,7 +2226,7 @@ public class FileImageSinkTest
 		TestUtils.copyFile(sourceFile, f);
 		
 		// given
-		FileImageSink sink = new FileImageSink(f.getAbsolutePath(), false);
+		FileImageSink sink = new FileImageSink(f.getAbsolutePath(), false, false);
 		
 		// when
 		try

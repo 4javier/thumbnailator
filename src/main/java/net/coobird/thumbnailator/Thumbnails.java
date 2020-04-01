@@ -729,6 +729,7 @@ instance.asFiles("path/to/thumbnail");
 			ALLOW_OVERWRITE("allowOverwrite"),
 			CROP("crop"),
 			USE_EXIF_ORIENTATION("useExifOrientation"),
+			NO_EXTENSION("noExtension"),
 			;
 			
 			private final String name;
@@ -773,6 +774,7 @@ instance.asFiles("path/to/thumbnail");
 			statusMap.put(Properties.ALLOW_OVERWRITE, Status.OPTIONAL);
 			statusMap.put(Properties.CROP, Status.OPTIONAL);
 			statusMap.put(Properties.USE_EXIF_ORIENTATION, Status.OPTIONAL);
+			statusMap.put(Properties.NO_EXTENSION, Status.OPTIONAL);
 		}
 
 		/**
@@ -843,6 +845,8 @@ instance.asFiles("path/to/thumbnail");
 		private boolean fitWithinDimenions = true;
 		
 		private boolean useExifOrientation = true;
+		
+		private boolean noExtension = false;
 		
 		/**
 		 * This field should be set to the {@link Position} to be used for
@@ -1326,6 +1330,37 @@ Thumbnails.of(image)
 		{
 			updateStatus(Properties.ALLOW_OVERWRITE, Status.ALREADY_SET);
 			this.allowOverwrite = allowOverwrite;
+			
+			return this;
+		}
+		
+		/**
+		 * Specifies whether or not to add an extension to destination filename.
+		 * <p>
+		 * This method will change the output behavior of the following methods:
+		 * <ul>
+		 * <li>{@link #toFile(File)}</li>
+		 * <li>{@link #toFile(String)}</li>
+		 * <li>{@link #toFiles(Iterable)}</li>
+		 * <li>{@link #toFiles(Rename)}</li>
+		 * <li>{@link #asFiles(Iterable)}</li>
+		 * <li>{@link #asFiles(Rename)}</li>
+		 * </ul>
+		 * The behavior of methods which are not listed above will not be
+		 * affected by calling this method.
+		 * <p>
+		 * 
+		 * @param noExtension	If {@code true} then destination filenames will be
+		 * 							written without any extension.
+		 * 							If {@code false}, then an extension will be
+		 * 							appended to destination filenames following 
+		 * 							{@link FileImageSink#write} rules
+		 * 						
+		 */
+		public Builder<T> noExtension(boolean noExtension)
+		{
+			updateStatus(Properties.NO_EXTENSION, Status.ALREADY_SET);
+			this.noExtension = noExtension;
 			
 			return this;
 		}
@@ -2364,7 +2399,7 @@ watermark(Positions.CENTER, image, opacity);
 				
 				ThumbnailParameter param = makeParam();
 				
-				FileImageSink destination = new FileImageSink(filenameIter.next(), allowOverwrite);
+				FileImageSink destination = new FileImageSink(filenameIter.next(), allowOverwrite, noExtension);
 				
 				try
 				{
@@ -2513,7 +2548,7 @@ watermark(Positions.CENTER, image, opacity);
 				File destinationFile =
 					new File(actualDestDir, rename.apply(f.getName(), param));
 				
-				FileImageSink destination = new FileImageSink(destinationFile, allowOverwrite);
+				FileImageSink destination = new FileImageSink(destinationFile, allowOverwrite, noExtension);
 				
 				try
 				{
@@ -2637,7 +2672,7 @@ watermark(Positions.CENTER, image, opacity);
 				throw new IllegalArgumentException("Cannot output multiple thumbnails to one file.");
 			}
 			
-			FileImageSink destination = new FileImageSink(outFile, allowOverwrite);
+			FileImageSink destination = new FileImageSink(outFile, allowOverwrite, noExtension);
 			
 			Thumbnailator.createThumbnail(
 					new SourceSinkThumbnailTask<T, File>(makeParam(), source, destination)
@@ -2677,7 +2712,7 @@ watermark(Positions.CENTER, image, opacity);
 				throw new IllegalArgumentException("Cannot output multiple thumbnails to one file.");
 			}
 			
-			FileImageSink destination = new FileImageSink(outFilepath, allowOverwrite);
+			FileImageSink destination = new FileImageSink(outFilepath, allowOverwrite, noExtension);
 			
 			Thumbnailator.createThumbnail(
 					new SourceSinkThumbnailTask<T, File>(makeParam(), source, destination)

@@ -42,6 +42,8 @@ public class FileImageSink implements ImageSink<File>
 	private File destinationFile;
 	
 	private final boolean allowOverwrite;
+	
+	private final boolean noExtension;
 
 	private String outputFormat;
 
@@ -85,7 +87,7 @@ public class FileImageSink implements ImageSink<File>
 	 */
 	public FileImageSink(File destinationFile)
 	{
-		this(destinationFile, true);
+		this(destinationFile, true, false);
 	}
 	
 	/**
@@ -101,9 +103,11 @@ public class FileImageSink implements ImageSink<File>
 	 * @param allowOverwrite		Whether or not the {@code FileImageSink}
 	 * 								should overwrite the destination file if
 	 * 								it already exists.
+	 * @param noExtension			Whether or not to append an extension to
+	 * 								destination filename.
 	 * @throws NullPointerException	If the specified file is {@code null}.
 	 */
-	public FileImageSink(File destinationFile, boolean allowOverwrite)
+	public FileImageSink(File destinationFile, boolean allowOverwrite, boolean noExtension)
 	{
 		super();
 		
@@ -113,6 +117,7 @@ public class FileImageSink implements ImageSink<File>
 		}
 		
 		this.destinationFile = destinationFile;
+		this.noExtension = noExtension;
 		this.outputFormat = getExtension(destinationFile);
 		this.allowOverwrite = allowOverwrite;
 	}
@@ -134,7 +139,7 @@ public class FileImageSink implements ImageSink<File>
 	 */
 	public FileImageSink(String destinationFilePath)
 	{
-		this(destinationFilePath, true);
+		this(destinationFilePath, true, false);
 	}
 	
 	/**
@@ -150,9 +155,11 @@ public class FileImageSink implements ImageSink<File>
 	 * @param allowOverwrite		Whether or not the {@code FileImageSink}
 	 * 								should overwrite the destination file if
 	 * 								it already exists.
+	 * @param noExtension			Whether or not to append an extension to
+	 * 								destination filename.
 	 * @throws NullPointerException	If the specified file path is {@code null}.
 	 */
-	public FileImageSink(String destinationFilePath, boolean allowOverwrite)
+	public FileImageSink(String destinationFilePath, boolean allowOverwrite, boolean noExtension)
 	{
 		super();
 		
@@ -162,6 +169,7 @@ public class FileImageSink implements ImageSink<File>
 		}
 		
 		this.destinationFile = new File(destinationFilePath);
+		this.noExtension = noExtension;
 		this.outputFormat = getExtension(destinationFile);
 		this.allowOverwrite = allowOverwrite;
 	}
@@ -273,19 +281,31 @@ public class FileImageSink implements ImageSink<File>
 	public void write(BufferedImage img) throws IOException
 	{
 		/*
-		 * Add or replace the file extension of the output file.
+		 * Add or replace the file extension of the output file if not 
+		 * selected to omit that.
 		 * 
 		 * If the file extension matches the output format's extension,
 		 * then leave as is.
 		 * 
 		 * Else, append the extension for the output format to the filename.
 		 */
+		
 		String fileExtension = getExtension(destinationFile);
 		
 		String formatName = outputFormat;
-		if (formatName != null && (fileExtension == null || !isMatchingFormat(formatName, fileExtension)))
+		
+		if  (noExtension == true)
 		{
-			destinationFile = new File(destinationFile.getAbsolutePath() + "." + formatName);
+			if (fileExtension != null) {
+				String fullDestFile = destinationFile.getAbsolutePath();
+				destinationFile = new File(fullDestFile.substring(0,fullDestFile.lastIndexOf(fileExtension)-1));
+			}
+		} else {
+			
+			if (formatName != null && (fileExtension == null || !isMatchingFormat(formatName, fileExtension)))
+			{
+				destinationFile = new File(destinationFile.getAbsolutePath() + "." + formatName);
+			}
 		}
 		
 		if (!allowOverwrite && destinationFile.exists()) {
